@@ -12,6 +12,14 @@ export default function Dashboard() {
   const [items, setItems] = useState(MOCK_INVENTORY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempStock, setTempStock] = useState<number>(0);
+  const [clockedInCount, setClockedInCount] = useState(0);
+
+  useEffect(() => {
+    // Get clocked in count from attendance storage
+    const allAttendance = JSON.parse(localStorage.getItem('kitchenos_attendance') || '{}');
+    const count = Object.values(allAttendance).filter((r: any) => r.status === 'clocked-in').length;
+    setClockedInCount(count);
+  }, []);
 
   const startEdit = (item: any) => {
     setEditingId(item.id);
@@ -68,7 +76,7 @@ export default function Dashboard() {
       <div className="stats-grid">
         <StatCard label="Net Margin" value="7.4%" trend="2.1%" trendType="positive" />
         <StatCard label="Food Cost %" value="28.2%" trend="1.5%" trendType="positive" color="var(--secondary)" />
-        <StatCard label="Active Prep" value="65%" trend="on pace" trendType="neutral" />
+        <StatCard label="Staff Clocked In" value={clockedInCount.toString()} trend="Active" trendType="neutral" />
         <StatCard label="Waste/Revenue" value="1.8%" trend="0.4%" trendType="positive" color="var(--error)" />
       </div>
 

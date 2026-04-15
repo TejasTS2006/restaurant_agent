@@ -5,27 +5,54 @@ import React, { useState, useEffect } from 'react';
 export default function AttendancePage() {
   const [status, setStatus] = useState<'clocked-out' | 'clocked-in'>('clocked-out');
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [history, setHistory] = useState([
-    { action: 'Clock In', time: '08:00 AM', date: 'Today' },
-    { action: 'Clock Out', time: '04:30 PM', date: 'Yesterday' },
-  ]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    
+    // Get current user from cookie
+    const authCookie = document.cookie.split('; ').find(row => row.startsWith('kitchenos_auth='));
+    const userData = authCookie ? JSON.parse(decodeURIComponent(authCookie.split('=')[1])) : null;
+    setUser(userData);
+
+    // Initial load from storage
+    if (userData) {
+      const allAttendance = JSON.parse(localStorage.getItem('kitchenos_attendance') || '{}');
+      const userRecord = allAttendance[userData.email] || { status: 'clocked-out', history: [] };
+      setStatus(userRecord.status);
+      setHistory(userRecord.history);
+    }
+
     return () => clearInterval(timer);
   }, []);
 
   const handleToggle = () => {
+    if (!user) return;
     const now = new Date();
+    const newStatus = status === 'clocked-out' ? 'clocked-in' : 'clocked-out';
     const newAction = status === 'clocked-out' ? 'Clock In' : 'Clock Out';
     
-    setHistory(prev => [{
+    const newEntry = {
       action: newAction,
       time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: 'Just now'
-    }, ...prev]);
-    
-    setStatus(status === 'clocked-out' ? 'clocked-in' : 'clocked-out');
+      date: 'Today'
+    };
+
+    const newHistory = [newEntry, ...history];
+    setHistory(newHistory);
+    setStatus(newStatus);
+
+    // Persist globally
+    const allAttendance = JSON.parse(localStorage.getItem('kitchenos_attendance') || '{}');
+    allAttendance[user.email] = {
+      name: user.name,
+      status: newStatus,
+      history: newHistory,
+      lastAction: newAction,
+      lastActionTime: new Date().toISOString()
+    };
+    localStorage.setItem('kitchenos_attendance', JSON.stringify(allAttendance));
   };
 
   return (

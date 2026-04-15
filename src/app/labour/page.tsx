@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SHIFTS = [
   { id: '1', name: 'Maria C.', role: 'Sous Chef', start: '07:00', end: '15:00', status: 'clocked-in', hourlyRate: 18 },
@@ -21,7 +21,28 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
 export default function LabourPage() {
   const [shifts, setShifts] = useState(SHIFTS);
 
-  const totalCoveredHours = shifts.filter(s => s.status !== 'gap').reduce((acc, s) => {
+  useEffect(() => {
+    // Load real attendance data
+    const allAttendance = JSON.parse(localStorage.getItem('kitchenos_attendance') || '{}');
+    const realShifts = Object.entries(allAttendance).map(([email, record]: [string, any], index) => ({
+      id: `real-${index}`,
+      name: record.name,
+      role: 'Staff', // Default role for external registration
+      start: record.history[record.history.length -1]?.time || '08:00',
+      end: record.status === 'clocked-in' ? '--' : record.history[0]?.time || '16:00',
+      status: record.status as any,
+      hourlyRate: 15
+    }));
+
+    // Merge: unique by name/email (for demo simplicity we'll just append unique names)
+    setShifts(prev => {
+      const existingNames = new Set(prev.map(s => s.name));
+      const filteredReal = realShifts.filter(s => !existingNames.has(s.name));
+      return [...filteredReal, ...prev];
+    });
+  }, []);
+
+  const totalCoveredHours = shifts.filter(s => s.status !== 'gap' && s.end !== '--').reduce((acc, s) => {
     const hours = parseInt(s.end) - parseInt(s.start);
     return acc + hours;
   }, 0);
