@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 const DEMO_CREDENTIALS = [
   { email: 'admin@kitchenos.com', password: 'admin123', role: 'GM', name: 'Alex Morgan' },
   { email: 'chef@kitchenos.com', password: 'chef123', role: 'Head Chef', name: 'Maria Chen' },
+  { email: 'labour@kitchenos.com', password: 'labour123', role: 'Labour', name: 'John Doe' },
 ];
 
 export default function LoginPage() {

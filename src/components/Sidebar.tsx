@@ -14,8 +14,23 @@ const NAV_ITEMS = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-
   const router = useRouter();
+
+  // Get user role from cookie
+  const authCookie = typeof document !== 'undefined' ? document.cookie.split('; ').find(row => row.startsWith('kitchenos_auth=')) : null;
+  const user = authCookie ? JSON.parse(decodeURIComponent(authCookie.split('=')[1])) : null;
+  const role = user?.role || 'GM';
+
+  const filteredNavItems = NAV_ITEMS.filter(item => {
+    if (role === 'Labour') {
+      return ['/inventory', '/attendance'].includes(item.href);
+    }
+    return true; // Admins/Chefs see everything
+  });
+
+  if (role === 'Labour' && !filteredNavItems.some(i => i.href === '/attendance')) {
+    filteredNavItems.push({ label: 'Check In/Out', href: '/attendance', icon: '⏱' });
+  }
 
   const handleLogout = () => {
     document.cookie = 'kitchenos_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -31,7 +46,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="nav">
-        {NAV_ITEMS.map(item => {
+        {filteredNavItems.map(item => {
           const active = pathname === item.href;
           return (
             <Link key={item.href} href={item.href} className={`nav-item ${active ? 'active' : ''}`}>

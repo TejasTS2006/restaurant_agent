@@ -25,10 +25,25 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Handle role-based access
+  if (isAuthed) {
+    const user = JSON.parse(authCookie.value);
+    const isLabour = user.role === 'Labour';
+    const labourAllowedRoutes = ['/inventory', '/attendance', '/login'];
+    const isAccessingRestricted = !labourAllowedRoutes.some(r => pathname.startsWith(r));
+
+    if (isLabour && isAccessingRestricted) {
+      const inventoryUrl = req.nextUrl.clone();
+      inventoryUrl.pathname = '/inventory';
+      return NextResponse.redirect(inventoryUrl);
+    }
+  }
+
   // Already logged in → redirect away from login page
   if (isPublic && isAuthed) {
+    const user = JSON.parse(authCookie.value);
     const dashboardUrl = req.nextUrl.clone();
-    dashboardUrl.pathname = '/';
+    dashboardUrl.pathname = user.role === 'Labour' ? '/inventory' : '/';
     return NextResponse.redirect(dashboardUrl);
   }
 
