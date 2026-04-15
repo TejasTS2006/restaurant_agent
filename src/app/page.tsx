@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import StatCard from '@/components/StatCard';
 import AgentLog from '@/components/AgentLog';
 import SalesChart from '@/components/SalesChart';
 import { MOCK_AGENT_LOGS, MOCK_INVENTORY, MOCK_PREP_LIST } from '@/lib/mock-data';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [logs, setLogs] = useState(MOCK_AGENT_LOGS);
   const [isRunning, setIsRunning] = useState(false);
   const [items, setItems] = useState(MOCK_INVENTORY);
@@ -95,7 +97,12 @@ export default function Dashboard() {
           <div className="section glass">
             <div className="section-header">
               <h2>Kitchen Prep Status</h2>
-              <button className="text-btn">View All</button>
+              <button 
+                className="text-btn"
+                onClick={() => router.push('/prep')}
+              >
+                View All
+              </button>
             </div>
             <div className="prep-list">
               {MOCK_PREP_LIST.map(item => (
@@ -118,7 +125,12 @@ export default function Dashboard() {
           <div className="section glass">
             <div className="section-header">
               <h2>Inventory Alerts</h2>
-              <button className="text-btn">Manage</button>
+              <button 
+                className="text-btn" 
+                onClick={() => router.push('/inventory')}
+              >
+                Manage
+              </button>
             </div>
             <div className="inventory-grid">
               {items.filter(i => i.currentStock < i.minThreshold).map(item => {
