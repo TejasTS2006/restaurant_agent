@@ -22,7 +22,7 @@ const AgentLog: React.FC<{
       </div>
       <div className="logs-container">
         {logs.map((log) => (
-          <div key={log.id} className="log-entry">
+          <div key={log.id} className={`log-entry ${log.message.includes('OVERRIDE') ? 'overridden' : ''}`}>
             <span className="timestamp">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             <span className="message">{log.message}</span>
             {log.type === 'action' && (
@@ -89,6 +89,11 @@ const AgentLog: React.FC<{
           flex-direction: column;
           gap: 8px;
           border-left: 2px solid var(--primary);
+        }
+
+        .log-entry.overridden {
+          border-left: 2px solid var(--secondary);
+          background: rgba(245, 158, 11, 0.05);
         }
 
         .timestamp {

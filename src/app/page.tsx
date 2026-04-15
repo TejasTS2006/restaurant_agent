@@ -26,7 +26,7 @@ export default function Dashboard() {
   };
 
   const handleOverride = (id: string) => {
-    setLogs(prev => prev.map(l => l.id === id ? { ...l, message: 'OPERATOR OVERRIDE: ' + l.message } : l));
+    setLogs(prev => prev.map(l => l.id === id ? { ...l, message: 'OPERATOR OVERRIDE: ' + l.message, type: 'info' } : l));
   };
 
   const startEdit = (item: any) => {
