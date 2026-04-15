@@ -75,14 +75,17 @@ export default function LoginPage() {
 
   return (
     <div className="login-root">
-      {/* Animated background blobs */}
+      {/* Immersive Animated Grid */}
+      <div className="grid-overlay" />
+      
+      {/* Premium Blobs */}
       <div className="blob blob-1" />
       <div className="blob blob-2" />
       <div className="blob blob-3" />
 
-      <div className="login-card glass">
-        <div className="brand">
-          <div className="logo-mark">K</div>
+      <div className="login-card glass animate-card-entry">
+        <div className="brand animate-logo">
+          <div className="logo-mark shimmer">K</div>
           <div className="brand-text">
             <span className="brand-name"><span className="accent">Kitchen</span>OS</span>
             <span className="brand-tagline">Autonomous Restaurant Operations</span>
@@ -153,28 +156,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {mode === 'signup' && (
-            <div className="field animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <label htmlFor="role">Account Role</label>
-              <div className="role-selector">
-                <button 
-                  type="button" 
-                  className={`role-option ${role === 'GM' ? 'active' : ''}`}
-                  onClick={() => setRole('GM')}
-                >
-                  Admin
-                </button>
-                <button 
-                  type="button" 
-                  className={`role-option ${role === 'Labour' ? 'active' : ''}`}
-                  onClick={() => setRole('Labour')}
-                >
-                  Labour
-                </button>
-              </div>
-            </div>
-          )}
-
           {error && (
             <div className="error-banner">
               ⚠ {error}
@@ -201,10 +182,6 @@ export default function LoginPage() {
             <p>Already have an account? <button onClick={() => setMode('login')}>Sign In</button></p>
           )}
         </div>
-
-        <div className="footer-note animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <div className="secure-badge">🔒 Secure · ISO 27001 Compliant</div>
-        </div>
       </div>
 
       <style jsx>{`
@@ -213,46 +190,66 @@ export default function LoginPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #050505;
+          background: #000;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          perspective: 1000px;
         }
 
-        /* Animated blobs */
+        .grid-overlay {
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          top: -50%;
+          left: -50%;
+          background-image: 
+            linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+          background-size: 50px 50px;
+          transform: rotateX(60deg) translateY(0);
+          animation: gridMove 20s linear infinite;
+          z-index: 1;
+        }
+
+        @keyframes gridMove {
+          from { transform: rotateX(60deg) translateY(0); }
+          to { transform: rotateX(60deg) translateY(50px); }
+        }
+
+        /* Blobs */
         .blob {
           position: absolute;
           border-radius: 50%;
           filter: blur(80px);
-          opacity: 0.25;
-          animation: float 8s ease-in-out infinite;
+          opacity: 0.15;
+          animation: float 12s ease-in-out infinite;
+          z-index: 2;
         }
 
-        .blob-1 {
-          width: 500px; height: 500px;
-          background: radial-gradient(circle, #10b981, transparent 70%);
-          top: -100px; left: -100px;
-          animation-delay: 0s;
-        }
-
-        .blob-2 {
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, #f59e0b, transparent 70%);
-          bottom: -80px; right: -80px;
-          animation-delay: 3s;
-        }
-
-        .blob-3 {
-          width: 300px; height: 300px;
-          background: radial-gradient(circle, #6366f1, transparent 70%);
-          top: 50%; left: 60%;
-          animation-delay: 5s;
-        }
+        .blob-1 { width: 600px; height: 600px; background: #10b981; top: -150px; left: -150px; }
+        .blob-2 { width: 500px; height: 500px; background: #f59e0b; bottom: -100px; right: -100px; }
 
         @keyframes float {
           0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-          33% { transform: translate(30px, -40px) scale(1.1) rotate(5deg); }
-          66% { transform: translate(-20px, 20px) scale(0.9) rotate(-5deg); }
+          50% { transform: translate(40px, -60px) scale(1.1) rotate(10deg); }
+        }
+
+        .animate-card-entry {
+          animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardEntry {
+          from { opacity: 0; transform: translateZ(-100px) translateY(40px) rotateX(-10deg); }
+          to { opacity: 1; transform: translateZ(0) translateY(0) rotateX(0deg); }
+        }
+
+        .animate-logo {
+          animation: logoScale 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes logoScale {
+          from { transform: scale(0.5); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
 
         .animate-slide-up {
@@ -304,7 +301,7 @@ export default function LoginPage() {
         /* Card */
         .login-card {
           position: relative;
-          z-index: 10;
+          z-index: 100;
           width: 440px;
           padding: 40px;
           border-radius: 20px;
@@ -312,9 +309,9 @@ export default function LoginPage() {
           flex-direction: column;
           gap: 24px;
           background: rgba(255, 255, 255, 0.04);
-          backdrop-filter: blur(20px);
+          backdrop-filter: blur(40px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
                       0 0 0 1px rgba(16, 185, 129, 0.1) inset;
           animation: cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -342,7 +339,7 @@ export default function LoginPage() {
           font-size: 22px;
           font-weight: 900;
           color: black;
-          box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
         }
 
         .brand-text {
