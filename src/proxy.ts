@@ -29,21 +29,21 @@ export function proxy(req: NextRequest) {
   if (isAuthed) {
     const user = JSON.parse(authCookie.value);
     const isLabour = user.role === 'Labour';
-    const labourAllowedRoutes = ['/inventory', '/attendance', '/login'];
-    const isAccessingRestricted = !labourAllowedRoutes.some(r => pathname.startsWith(r));
+    const labourAllowedRoutes = ['/', '/inventory', '/attendance', '/login'];
+    // Check if accessing restricted route (all routes NOT in allowed list)
+    const isAccessingRestricted = !labourAllowedRoutes.some(r => pathname === r || pathname.startsWith(r + '/'));
 
     if (isLabour && isAccessingRestricted) {
-      const inventoryUrl = req.nextUrl.clone();
-      inventoryUrl.pathname = '/inventory';
-      return NextResponse.redirect(inventoryUrl);
+      const homeUrl = req.nextUrl.clone();
+      homeUrl.pathname = '/';
+      return NextResponse.redirect(homeUrl);
     }
   }
 
   // Already logged in → redirect away from login page
   if (isPublic && isAuthed) {
-    const user = JSON.parse(authCookie.value);
     const dashboardUrl = req.nextUrl.clone();
-    dashboardUrl.pathname = user.role === 'Labour' ? '/inventory' : '/';
+    dashboardUrl.pathname = '/';
     return NextResponse.redirect(dashboardUrl);
   }
 

@@ -23,7 +23,7 @@ const Sidebar = () => {
 
   const filteredNavItems = NAV_ITEMS.filter(item => {
     if (role === 'Labour') {
-      return ['/inventory', '/attendance'].includes(item.href);
+      return ['/', '/inventory', '/attendance'].includes(item.href);
     }
     return true; // Admins/Chefs see everything
   });

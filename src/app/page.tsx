@@ -15,8 +15,13 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempStock, setTempStock] = useState<number>(0);
   const [clockedInCount, setClockedInCount] = useState(0);
-
+  // Get user role
+  const [role, setRole] = useState('GM');
   useEffect(() => {
+    const authCookie = typeof document !== 'undefined' ? document.cookie.split('; ').find(row => row.startsWith('kitchenos_auth=')) : null;
+    const userData = authCookie ? JSON.parse(decodeURIComponent(authCookie.split('=')[1])) : null;
+    setRole(userData?.role || 'GM');
+
     // Get clocked in count from attendance storage
     const allAttendance = JSON.parse(localStorage.getItem('kitchenos_attendance') || '{}');
     const count = Object.values(allAttendance).filter((r: any) => r.status === 'clocked-in').length;
@@ -66,17 +71,19 @@ export default function Dashboard() {
     <div className="dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Operator Command Centre</h1>
-          <p className="subtitle">Live insights from KitchenOS Agents</p>
+          <h1>{role === 'Labour' ? 'Staff Command Centre' : 'Operator Command Centre'}</h1>
+          <p className="subtitle">{role === 'Labour' ? 'Daily inventory and attendance tasks' : 'Live insights from KitchenOS Agents'}</p>
         </div>
         <div className="header-actions">
-          <button 
-            className={`run-btn ${isRunning ? 'running' : ''}`} 
-            onClick={runAgents}
-            disabled={isRunning}
-          >
-            {isRunning ? 'Agents Processing...' : 'Trigger Agent Loop'}
-          </button>
+          {role !== 'Labour' && (
+            <button 
+              className={`run-btn ${isRunning ? 'running' : ''}`} 
+              onClick={runAgents}
+              disabled={isRunning}
+            >
+              {isRunning ? 'Agents Processing...' : 'Trigger Agent Loop'}
+            </button>
+          )}
           <div className="current-date">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
@@ -84,59 +91,71 @@ export default function Dashboard() {
       </header>
 
       <div className="stats-grid">
-        <StatCard label="Net Margin" value="7.4%" trend="2.1%" trendType="positive" />
-        <StatCard label="Food Cost %" value="28.2%" trend="1.5%" trendType="positive" color="var(--secondary)" />
+        {role !== 'Labour' && <StatCard label="Net Margin" value="7.4%" trend="2.1%" trendType="positive" />}
+        {role !== 'Labour' && <StatCard label="Food Cost %" value="28.2%" trend="1.5%" trendType="positive" color="var(--secondary)" />}
         <StatCard label="Staff Clocked In" value={clockedInCount.toString()} trend="Active" trendType="neutral" />
-        <StatCard label="Waste/Revenue" value="1.8%" trend="0.4%" trendType="positive" color="var(--error)" />
+        {role !== 'Labour' && <StatCard label="Waste/Revenue" value="1.8%" trend="0.4%" trendType="positive" color="var(--error)" />}
+        {role === 'Labour' && <StatCard label="Active Items" value={items.length.toString()} trend="Inventory" trendType="neutral" color="var(--primary)" />}
+        {role === 'Labour' && <StatCard label="Pending Orders" value="2" trend="Awaiting" trendType="neutral" color="var(--secondary)" />}
       </div>
 
-      <SalesChart />
+      {role !== 'Labour' && <SalesChart />}
 
-      <div className="main-grid">
+      <div className="main-grid" style={{ gridTemplateColumns: role === 'Labour' ? '1fr' : '1.5fr 1fr' }}>
         <div className="left-panel">
-          <div className="section glass">
-            <div className="section-header">
-              <h2>Kitchen Prep Status</h2>
-              <button 
-                className="text-btn"
-                onClick={() => router.push('/prep')}
-              >
-                View All
-              </button>
+          {role !== 'Labour' && (
+            <div className="section glass">
+              <div className="section-header">
+                <h2>Kitchen Prep Status</h2>
+                <button 
+                  className="text-btn"
+                  onClick={() => router.push('/prep')}
+                >
+                  View All
+                </button>
+              </div>
+              <div className="prep-list">
+                {MOCK_PREP_LIST.map(item => (
+                  <div key={item.id} className="prep-item">
+                    <div className="item-info">
+                      <span className="name">{item.name}</span>
+                      <span className="station">{item.station}</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div className="fill" style={{ width: `${(item.currentQuantity / item.neededQuantity) * 100}%` }}></div>
+                    </div>
+                    <div className="status-badge" data-status={item.status}>
+                      {item.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="prep-list">
-              {MOCK_PREP_LIST.map(item => (
-                <div key={item.id} className="prep-item">
-                  <div className="item-info">
-                    <span className="name">{item.name}</span>
-                    <span className="station">{item.station}</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="fill" style={{ width: `${(item.currentQuantity / item.neededQuantity) * 100}%` }}></div>
-                  </div>
-                  <div className="status-badge" data-status={item.status}>
-                    {item.status}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
           <div className="section glass">
             <div className="section-header">
-              <h2>Inventory Alerts</h2>
+              <h2>Inventory Status</h2>
               <button 
                 className="text-btn" 
                 onClick={() => router.push('/inventory')}
               >
-                Manage
+                {role === 'Labour' ? 'Update Stock' : 'Manage'}
               </button>
             </div>
+            {role === 'Labour' && (
+              <div className="quick-add-item">
+                <button className="add-btn-large" onClick={() => router.push('/inventory')}>
+                   + Add New Stock Item
+                </button>
+              </div>
+            )}
             <div className="inventory-grid">
-              {items.filter(i => i.currentStock < i.minThreshold).map(item => {
+              {(role === 'Labour' ? items : items.filter(i => i.currentStock < i.minThreshold)).map(item => {
                 const isEditing = editingId === item.id;
+                const isCritical = item.currentStock < item.minThreshold;
                 return (
-                  <div key={item.id} className="inventory-alert-card">
+                  <div key={item.id} className={`inventory-alert-card ${isCritical ? 'critical' : ''}`}>
                     <div className="alert-top">
                       <div className="name">{item.name}</div>
                       {!isEditing && (
@@ -159,7 +178,7 @@ export default function Dashboard() {
                       ) : (
                         <>
                           <span className="current">{item.currentStock} {item.unit}</span>
-                          <span className="threshold"> / min {item.minThreshold} {item.unit}</span>
+                          <span className="threshold"> / target {item.minThreshold} {item.unit}</span>
                         </>
                       )}
                     </div>
@@ -170,13 +189,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="right-panel">
-          <AgentLog 
-            logs={logs} 
-            onApprove={handleApprove}
-            onOverride={handleOverride}
-          />
-        </div>
+        {role !== 'Labour' && (
+          <div className="right-panel">
+            <AgentLog 
+              logs={logs} 
+              onApprove={handleApprove}
+              onOverride={handleOverride}
+            />
+          </div>
+        )}
       </div>
 
       <style jsx>{`
@@ -382,6 +403,34 @@ export default function Dashboard() {
         .dash-cancel {
           font-size: 10px;
           color: var(--text-muted);
+        }
+
+        .quick-add-item {
+          margin-bottom: 20px;
+        }
+
+        .add-btn-large {
+          width: 100%;
+          padding: 16px;
+          background: var(--primary-glow);
+          border: 1px dashed var(--primary);
+          border-radius: var(--radius-md);
+          color: var(--primary);
+          font-weight: 700;
+          font-size: 15px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .add-btn-large:hover {
+          background: var(--primary);
+          color: black;
+          border-style: solid;
+        }
+
+        .inventory-alert-card.critical {
+          background: rgba(239, 68, 68, 0.05);
+          border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .inventory-alert-card .stock-info {
