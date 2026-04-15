@@ -98,7 +98,7 @@ export default function LoginPage() {
 
         <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="form">
           {mode === 'signup' && (
-            <div className="field">
+            <div className="field animate-slide-up" style={{ animationDelay: '0.1s' }}>
               <label htmlFor="name">Full Name</label>
               <div className="input-wrap">
                 <span className="input-icon">👤</span>
@@ -114,7 +114,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div className="field">
+          <div className="field animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <label htmlFor="email">Email address</label>
             <div className="input-wrap">
               <span className="input-icon">✉</span>
@@ -130,7 +130,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="field">
+          <div className="field animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <label htmlFor="password">Password</label>
             <div className="input-wrap">
               <span className="input-icon">⬤</span>
@@ -154,7 +154,7 @@ export default function LoginPage() {
           </div>
 
           {mode === 'signup' && (
-            <div className="field">
+            <div className="field animate-slide-up" style={{ animationDelay: '0.4s' }}>
               <label htmlFor="role">Account Role</label>
               <div className="role-selector">
                 <button 
@@ -183,7 +183,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className={`submit-btn ${loading ? 'loading' : ''}`}
+            className={`submit-btn shimmer ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
             {loading ? (
@@ -194,7 +194,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="toggle-mode">
+        <div className="toggle-mode animate-fade-in" style={{ animationDelay: '0.5s' }}>
           {mode === 'login' ? (
             <p>New to KitchenOS? <button onClick={() => setMode('signup')}>Create an account</button></p>
           ) : (
@@ -202,15 +202,8 @@ export default function LoginPage() {
           )}
         </div>
 
-        {mode === 'login' && (
-          <button className="demo-btn" onClick={fillDemo}>
-            ⚡ Fill demo credentials
-          </button>
-        )}
-
-        <div className="footer-note">
-          <div className="secure-badge">🔒 Secure · Session expires in 24h</div>
-          <div className="roles">Roles: GM · Head Chef · Ops Lead</div>
+        <div className="footer-note animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="secure-badge">🔒 Secure · ISO 27001 Compliant</div>
         </div>
       </div>
 
@@ -257,9 +250,55 @@ export default function LoginPage() {
         }
 
         @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(20px, -20px) scale(1.05); }
-          66% { transform: translate(-15px, 15px) scale(0.95); }
+          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+          33% { transform: translate(30px, -40px) scale(1.1) rotate(5deg); }
+          66% { transform: translate(-20px, 20px) scale(0.9) rotate(-5deg); }
+        }
+
+        .animate-slide-up {
+          opacity: 0;
+          animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+          opacity: 0;
+          animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+
+        .shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .shimmer::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(
+            45deg,
+            transparent 20%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 80%
+          );
+          transform: rotate(30deg);
+          animation: shimmer 3s infinite linear;
+        }
+
+        @keyframes shimmer {
+          from { transform: translateX(-100%) rotate(30deg); }
+          to { transform: translateX(100%) rotate(30deg); }
         }
 
         /* Card */
