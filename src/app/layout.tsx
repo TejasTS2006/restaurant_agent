@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Real-time AI ops for commercial kitchens",
 };
 
+import LayoutContent from "@/components/LayoutContent";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,10 +22,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StyledJsxRegistry>
-          <Sidebar />
-          <main className="main-content">
+          <LayoutContent>
             {children}
-          </main>
+          </LayoutContent>
         </StyledJsxRegistry>
       </body>
     </html>
